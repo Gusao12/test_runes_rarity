@@ -144,6 +144,33 @@
         .tab-btn.active { background: #16a34a; color: white; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.4); }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        .tab-btn-vertical {
+        padding: 12px 16px;
+        border: 1px solid #14532d;
+        border-radius: 6px;
+        background: rgba(0, 30, 20, 0.4);
+        color: #6b9b8f;
+        font-family: 'Chakra Petch', sans-serif;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        }
+        .tab-btn-vertical:hover {
+        background: rgba(22, 163, 74, 0.2);
+        color: #a7f3d0;
+        border-color: #22c55e;
+        }
+        .tab-btn-vertical.active {
+        background: #16a34a;
+        color: white;
+        border-color: #4ade80;
+        box-shadow: 0 2px 8px rgba(22, 163, 74, 0.4);
+        }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -190,13 +217,16 @@
                     </div>
                 </div>
 
-                <!-- Tab Switcher -->
-                <div class="tab-container mb-4">
-                <button type="button" class="tab-btn active" onclick="switchTab('eta')">
+                <!-- Tab Switcher - Vertical -->
+                <div class="flex flex-col gap-1 mb-4">
+                <button type="button" class="tab-btn-vertical active" onclick="switchTab('eta')">
                     <i class="fas fa-crosshairs"></i> ETA Calculator
                 </button>
-                <button type="button" class="tab-btn" onclick="switchTab('session')">
+                <button type="button" class="tab-btn-vertical" onclick="switchTab('session')">
                     <i class="fas fa-hourglass-half"></i> Session Calculator
+                </button>
+                <button type="button" class="tab-btn-vertical" onclick="switchTab('bulk')">
+                    <i class="fas fa-layer-group"></i> Bulk Target
                 </button>
                 </div>
 
@@ -262,6 +292,55 @@
                     <div class="text-right">
                         <div class="text-[9px] text-gray-500 uppercase font-bold">Chance ≥1</div>
                         <div id="sessProbability" class="text-lg font-bold text-yellow-400 font-mono">--</div>
+                    </div>
+                    </div>
+                    <div class="mt-2 text-[10px] text-gray-500 text-center">
+                    <i class="fas fa-info-circle"></i> Based on your current config
+                    </div>
+                </div>
+                </div>
+
+                <!-- Bulk Target Tab Content -->
+                <div id="tab-bulk" class="tab-content">
+                <div class="bg-black/30 p-4 rounded-xl border border-green-900/50">
+                    <div class="flex items-center gap-2 mb-3 text-green-400">
+                    <i class="fas fa-layer-group"></i>
+                    <h3 class="text-sm font-bold uppercase tracking-widest">Bulk Target Calculator</h3>
+                    </div>
+                    
+                    <!-- Target Count Input -->
+                    <div class="mb-3">
+                    <label class="block text-green-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">Desired Quantity</label>
+                    <input type="number" id="bulkCount" value="10" min="1" class="w-full p-2 input-game text-sm bg-black/40" placeholder="e.g. 10">
+                    </div>
+                    
+                    <!-- Rune Selector -->
+                    <div class="mb-3">
+                    <label class="block text-green-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">Target Rune</label>
+                    <select id="bulkRune" class="w-full p-2 input-game text-sm bg-black/40 rounded">
+                        <option value="">-- Select Rune --</option>
+                    </select>
+                    </div>
+                    
+                    <!-- Quick Presets -->
+                    <div class="flex gap-1 mb-3 flex-wrap">
+                    <button type="button" onclick="setBulkCount(1)" class="flex-1 min-w-[50px] text-[10px] bg-green-900/40 hover:bg-green-800/60 text-green-300 px-2 py-1.5 rounded border border-green-800 transition">x1</button>
+                    <button type="button" onclick="setBulkCount(5)" class="flex-1 min-w-[50px] text-[10px] bg-green-900/40 hover:bg-green-800/60 text-green-300 px-2 py-1.5 rounded border border-green-800 transition">x5</button>
+                    <button type="button" onclick="setBulkCount(10)" class="flex-1 min-w-[50px] text-[10px] bg-green-900/40 hover:bg-green-800/60 text-green-300 px-2 py-1.5 rounded border border-green-800 transition">x10</button>
+                    <button type="button" onclick="setBulkCount(25)" class="flex-1 min-w-[50px] text-[10px] bg-green-900/40 hover:bg-green-800/60 text-green-300 px-2 py-1.5 rounded border border-green-800 transition">x25</button>
+                    <button type="button" onclick="setBulkCount(50)" class="flex-1 min-w-[50px] text-[10px] bg-green-900/40 hover:bg-green-800/60 text-green-300 px-2 py-1.5 rounded border border-green-800 transition">x50</button>
+                    <button type="button" onclick="setBulkCount(100)" class="flex-1 min-w-[50px] text-[10px] bg-green-900/40 hover:bg-green-800/60 text-green-300 px-2 py-1.5 rounded border border-green-800 transition">x100</button>
+                    </div>
+                    
+                    <!-- Results -->
+                    <div class="grid grid-cols-2 gap-2 text-xs border-t border-green-800/30 pt-3">
+                    <div>
+                        <div class="text-[9px] text-gray-500 uppercase font-bold">Total Time</div>
+                        <div id="bulkTime" class="text-lg font-bold text-green-400 font-mono">--</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[9px] text-gray-500 uppercase font-bold">Per Rune (avg)</div>
+                        <div id="bulkPerRune" class="text-lg font-bold text-yellow-400 font-mono">--</div>
                     </div>
                     </div>
                     <div class="mt-2 text-[10px] text-gray-500 text-center">
@@ -783,10 +862,10 @@
             });
         }
 
-                //TAB SWITCHER
+        //TAB SWITCHER
         window.switchTab = function(tabName) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        event.target.closest('.tab-btn').classList.add('active');
+        document.querySelectorAll('.tab-btn-vertical').forEach(btn => btn.classList.remove('active'));
+        event.target.closest('.tab-btn-vertical').classList.add('active');
         
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         document.getElementById(`tab-${tabName}`).classList.add('active');
@@ -794,6 +873,10 @@
         if (tabName === 'session') {
             populateRuneSelector();
             calculateSession();
+        }
+        if (tabName === 'bulk') {
+            populateBulkRuneSelector();
+            calculateBulk();
         }
         };
 
@@ -886,6 +969,80 @@
         document.getElementById('sessSecs').value = s || 0;
         calculateSession();
         }
+        
+        // === BULK TARGET CALCULATOR ===
+        function populateBulkRuneSelector() {
+        const select = document.getElementById('bulkRune');
+        if (!select) return;
+        if (select.options.length > 1) return;
+        
+        const categories = [...new Set(runeData.map(r => r.type))];
+        categories.forEach(cat => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = cat;
+            runeData.filter(r => r.type === cat).forEach(rune => {
+            const option = document.createElement('option');
+            option.value = rune.raw;
+            option.textContent = `${rune.name} (1/${rune.chance.replace('1/', '')})`;
+            optgroup.appendChild(option);
+            });
+            select.appendChild(optgroup);
+        });
+        }
+
+        function calculateBulk() {
+        const count = parseFloat(document.getElementById('bulkCount')?.value) || 1;
+        const runeRaw = document.getElementById('bulkRune')?.value;
+        const timeEl = document.getElementById('bulkTime');
+        const perRuneEl = document.getElementById('bulkPerRune');
+        
+        if (!runeRaw || count <= 0) {
+            if(timeEl) timeEl.innerText = '--';
+            if(perRuneEl) perRuneEl.innerText = '--';
+            return;
+        }
+        
+        // Get current config
+        const speedInput = parseFloat(document.getElementById('speed')?.value) || 0.15;
+        const bulk = parseValue(document.getElementById('bulk')?.value);
+        const luck = parseValue(document.getElementById('luck')?.value);
+        const speed2x = document.getElementById('speed2x')?.checked;
+        const luck2x = document.getElementById('luck2x')?.checked;
+        const bhSpeed = document.getElementById('bhSpeed')?.checked;
+        const bhLuck = document.getElementById('bhLuck')?.checked;
+        
+        // Apply modifiers
+        let effectiveBulk = bulk;
+        if (speed2x) effectiveBulk *= 2;
+        if (bhSpeed) effectiveBulk *= 2;
+        
+        let finalLuck = luck;
+        if (luck2x) finalLuck *= 2;
+        if (bhLuck) finalLuck *= 10;
+        
+        // Calculate
+        const attemptsPerSecond = effectiveBulk / speedInput;
+        const totalPower = attemptsPerSecond * finalLuck;
+        const runeChance = parseValue(runeRaw);
+        
+        // Time for N runes = (chance × count) / power
+        const totalSeconds = (runeChance * count) / totalPower;
+        const perRuneSeconds = runeChance / totalPower;
+        
+        // Display
+        if (timeEl) {
+            timeEl.innerText = formatTime(totalSeconds);
+            timeEl.className = `text-lg font-bold font-mono ${totalSeconds >= 3600 ? 'text-red-500' : totalSeconds >= 300 ? 'text-orange-500' : 'text-green-400'}`;
+        }
+        if (perRuneEl) {
+            perRuneEl.innerText = formatTime(perRuneSeconds);
+        }
+        }
+
+        function setBulkCount(n) {
+        document.getElementById('bulkCount').value = n;
+        calculateBulk();
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const toggleBtn = document.getElementById('toggleConfig');
@@ -916,6 +1073,23 @@
 
             // Initialize session calculator
             populateRuneSelector();
+            // Bulk Target Calculator event listeners
+            ['bulkCount', 'bulkRune'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.oninput = calculateBulk;
+            });
+
+            // Recalculate bulk when main config changes
+            ['speed', 'bulk', 'luck', 'speed2x', 'luck2x', 'bhSpeed', 'bhLuck'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                const evt = el.tagName === 'INPUT' && el.type === 'checkbox' ? 'onchange' : 'oninput';
+                el[evt] = function() { window.calculate(); calculateSession(); calculateBulk(); };
+            }
+            });
+
+            // Initialize bulk calculator
+            populateBulkRuneSelector();
         });
     </script>
 </body>

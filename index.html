@@ -241,7 +241,16 @@
                     <input type="text" id="target" class="w-full p-2 input-game text-sm mb-3 bg-black/40" placeholder="e.g. 3.5QdDe">
                     <div class="flex justify-between items-end border-t border-green-800/30 pt-2">
                     <span class="text-[10px] text-gray-500 uppercase font-bold">Time Required</span>
-                    <div id="customEta" class="text-xl font-bold text-green-500 font-mono">--</div>
+                    <div class="text-right space-y-0.5">
+                        <div>
+                            <span class="text-[9px] text-gray-500 uppercase font-bold mr-1">Avg</span>
+                            <span id="customEtaAvg" class="text-xl font-bold text-green-500 font-mono">--</span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-gray-500 uppercase font-bold mr-1">50%</span>
+                            <span id="customEtaP50" class="text-base font-bold text-green-400 font-mono">--</span>
+                        </div>
+                    </div>
                     </div>
                 </div>
                 </div>
@@ -778,18 +787,28 @@
 
             const totalPower = effectiveRPS * finalLuck;
 
-            const etaElement = document.getElementById('customEta');
-            if(etaElement){
-                if (totalPower > 0 && target > 0) {
-                    const sec = target / totalPower;
-                    etaElement.innerText = formatTime(sec);
-                    // Threshold logic: Red > 1h, Orange 5m-1h, Green < 5m
-                    if (sec >= 3600) { etaElement.className = "text-xl font-bold text-red-500 font-mono drop-shadow-md"; }
-                    else if (sec >= 300) { etaElement.className = "text-xl font-bold text-orange-500 font-mono drop-shadow-md"; }
-                    else { etaElement.className = "text-xl font-bold text-green-400 font-mono drop-shadow-md"; }
-                } else { 
-                    etaElement.innerText = "--"; 
-                }
+            const etaAvgEl = document.getElementById('customEtaAvg');
+            const etaP50El = document.getElementById('customEtaP50');
+
+            if (totalPower > 0 && target > 0 && etaAvgEl && etaP50El) {
+                const secMean = target / totalPower;
+                const secMedian = Math.log(2) * secMean;
+
+                etaAvgEl.innerText = formatTime(secMean);
+                etaP50El.innerText = formatTime(secMedian);
+
+                // Цвета для среднего
+                if (secMean >= 3600) etaAvgEl.className = "text-xl font-bold text-red-500 font-mono drop-shadow-md";
+                else if (secMean >= 300) etaAvgEl.className = "text-xl font-bold text-orange-500 font-mono drop-shadow-md";
+                else etaAvgEl.className = "text-xl font-bold text-green-400 font-mono drop-shadow-md";
+
+                // Цвета для медианы можно сделать мягче
+                if (secMedian >= 3600) etaP50El.className = "text-base font-bold text-red-400 font-mono drop-shadow-md";
+                else if (secMedian >= 300) etaP50El.className = "text-base font-bold text-orange-400 font-mono drop-shadow-md";
+                else etaP50El.className = "text-base font-bold text-green-300 font-mono drop-shadow-md";
+            } else {
+                if (etaAvgEl) etaAvgEl.innerText = "--";
+                if (etaP50El) etaP50El.innerText = "--";
             }
             renderRunes(totalPower);
         };
@@ -828,13 +847,25 @@
             
             grid.innerHTML = '';
             filtered.forEach(rune => {
-                const sec = totalPower > 0 ? parseValue(rune.raw) / totalPower : 0;
-                let eta = "--"; let colorClass = "text-gray-400";
+                const chanceValue = parseValue(rune.raw);
+                const secMean = totalPower > 0 ? chanceValue / totalPower : 0;
+                const secMedian = totalPower > 0 ? Math.log(2) * chanceValue / totalPower : 0;
+
+                let etaMean = "--", etaMedian = "--";
+                let colorClassMean = "text-gray-400", colorClassMedian = "text-gray-400";
+
                 if (totalPower > 0) {
-                    eta = formatTime(sec);
-                    if (sec >= 3600) colorClass = "text-red-500 font-bold";
-                    else if (sec >= 300) colorClass = "text-orange-500 font-bold";
-                    else colorClass = "text-green-400 font-bold";
+                    // Среднее (как было)
+                    etaMean = formatTime(secMean);
+                    if (secMean >= 3600) colorClassMean = "text-red-500 font-bold";
+                    else if (secMean >= 300) colorClassMean = "text-orange-500 font-bold";
+                    else colorClassMean = "text-green-400 font-bold";
+
+                    // 50% ETA (медиана)
+                    etaMedian = formatTime(secMedian);
+                    if (secMedian >= 3600) colorClassMedian = "text-red-500 font-bold";
+                    else if (secMedian >= 300) colorClassMedian = "text-orange-500 font-bold";
+                    else colorClassMedian = "text-green-400 font-bold";
                 }
                 
                 const [darkColor, lightColor, borderColor, iconClass] = getCardStyle(rune.type);
@@ -856,8 +887,20 @@
                         </div>
                         <div class="text-[10px] font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5 text-white/90"><i class="fas ${iconClass}"></i> ${rune.type}</div>
                         <div class="grid grid-cols-2 gap-2 text-sm border-t border-white/10 pt-3">
-                            <div><div class="text-[9px] text-white/60 uppercase font-bold tracking-wider mb-0.5">Chance</div><div class="font-mono text-white">1 in ${rune.chance.replace('1/', '')}</div></div>
-                            <div class="text-right"><div class="text-[9px] text-white/60 uppercase font-bold tracking-wider mb-0.5">ETA</div><div class="font-mono ${colorClass} drop-shadow-sm bg-black/20 px-1 rounded inline-block" style="text-shadow: 0 0 5px rgba(0,0,0,0.5)">${eta}</div></div>
+                            <div>
+                                <div class="text-[9px] text-white/60 uppercase font-bold tracking-wider mb-0.5">Chance</div>
+                                <div class="font-mono text-white">1 in ${rune.chance.replace('1/', '')}</div>
+                            </div>
+                            <div class="text-right space-y-0.5">
+                                <div>
+                                    <div class="text-[9px] text-white/60 uppercase font-bold tracking-wider mb-0.5">ETA (avg)</div>
+                                    <div class="font-mono ${colorClassMean} drop-shadow-sm bg-black/20 px-1 rounded inline-block" style="text-shadow: 0 0 5px rgba(0,0,0,0.5)">${etaMean}</div>
+                                </div>
+                                <div>
+                                    <div class="text-[9px] text-white/60 uppercase font-bold tracking-wider mb-0.5">ETA (50%)</div>
+                                    <div class="font-mono ${colorClassMedian} drop-shadow-sm bg-black/10 px-1 rounded inline-block" style="text-shadow: 0 0 5px rgba(0,0,0,0.5)">${etaMedian}</div>
+                                </div>
+                            </div>
                         </div>
                         <i class="fas ${iconClass} card-bg-icon"></i>
                     </div>
